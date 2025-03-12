@@ -6,7 +6,9 @@
         <div v-for="task in todoTasks" :key="task.id" class="task">
           {{ task.name }}
         </div>
-        <button class="add-task-btn" @click="openAddTask('todo')">Add Task</button>
+        <button class="add-task-btn" @click="openAddTask('todo')">
+          Add Task
+        </button>
       </div>
 
       <div class="column">
@@ -14,7 +16,9 @@
         <div v-for="task in doingTasks" :key="task.id" class="task">
           {{ task.name }}
         </div>
-        <button class="add-task-btn" @click="openAddTask('doing')">Add Task</button>
+        <button class="add-task-btn" @click="openAddTask('doing')">
+          Add Task
+        </button>
       </div>
 
       <div class="column">
@@ -22,7 +26,9 @@
         <div v-for="task in completeTasks" :key="task.id" class="task">
           {{ task.name }}
         </div>
-        <button class="add-task-btn" @click="openAddTask('complete')">Add Task</button>
+        <button class="add-task-btn" @click="openAddTask('complete')">
+          Add Task
+        </button>
       </div>
     </div>
 
@@ -35,7 +41,7 @@
 </template>
 
 <script>
-import AddTask from './AddTask.vue';
+import AddTask from '../AddTask.vue';
 
 export default {
   components: {

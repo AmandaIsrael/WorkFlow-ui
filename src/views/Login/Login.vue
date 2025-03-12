@@ -16,34 +16,53 @@
         </div>
         <button type="submit">Sign-in</button>
       </form>
-      <button type="submit" class="sign-up">Sign-up</button>
+      <button type="submit" class="sign-up" @click="openAddUser()">
+        Sign-up
+      </button>
+    </div>
+
+    <div v-if="isOpenModal" class="modal-overlay" @click="closeModal">
+      <div class="add-user-modal" @click.stop>
+        <AddUser />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import AddUser from './Modal/AddUser.vue';
+
 export default {
+  components: {
+    AddUser,
+  },
   data() {
     return {
       username: '',
       password: '',
       showPassword: false,
-    }
+      isOpenModal: false,
+    };
   },
   methods: {
     handleLogin() {
-      console.log('Login clicado:', this.username, this.password)
+      console.log('Login clicado:', this.username, this.password);
       // Simulação de login, substitua pela lógica real
-    }, 
+    },
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
-    }
-  }
-}
+    },
+    openAddUser() {
+      this.isOpenModal = true;
+    },
+    closeModal() {
+      this.isOpenModal = false;
+    },
+  },
+};
 </script>
 
 <style scoped>
-
 .login-container {
   display: flex;
   justify-content: center;
@@ -92,5 +111,28 @@ h1 {
   font-weight: bold;
   cursor: pointer;
   margin-top: auto;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.add-user-modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+  width: 400px;
+  max-width: 90%;
+  position: relative;
 }
 </style>

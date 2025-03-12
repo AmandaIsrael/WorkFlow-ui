@@ -1,23 +1,34 @@
-// import axios from 'axios';
+import axios from 'axios';
 
-// const api = axios.create({
-//   baseURL: 'https://api.exemplo.com', // URL do seu back-end
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-// });
+const api = axios.create({
+  baseURL: 'http://localhost:8080',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-// // Função para login
+export const register = async (credentials, router) => {
+  try {
+    const response = await api.post(
+      '/api/authentication/register',
+      credentials
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error saving user: ', error);
+    throw error;
+  }
+};
+
 // export const loginUser = async (credentials) => {
 //   try {
-//     const response = await api.post('/auth/login', credentials); // Exemplo de endpoint de login
+//     const response = await api.post('/auth/login', credentials);
 //     return response.data;
 //   } catch (error) {
 //     console.error('Erro ao fazer login', error);
 //     throw error;
 //   }
 // };
-
 // // Função para obter as tarefas (Kanban)
 // export const fetchTasks = async () => {
 //   try {
