@@ -7,7 +7,22 @@ const api = axios.create({
   },
 });
 
-export const register = async (credentials, router) => {
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+
+export const register = async (credentials) => {
   try {
     const response = await api.post(
       '/api/authentication/register',
@@ -15,38 +30,27 @@ export const register = async (credentials, router) => {
     );
     return response.data;
   } catch (error) {
-    console.error('Error saving user: ', error);
+    console.error('Registration failed:', error);
     throw error;
   }
 };
 
-// export const loginUser = async (credentials) => {
-//   try {
-//     const response = await api.post('/auth/login', credentials);
-//     return response.data;
-//   } catch (error) {
-//     console.error('Erro ao fazer login', error);
-//     throw error;
-//   }
-// };
-// // Função para obter as tarefas (Kanban)
-// export const fetchTasks = async () => {
-//   try {
-//     const response = await api.get('/kanban/tasks'); // Exemplo de endpoint para tarefas
-//     return response.data;
-//   } catch (error) {
-//     console.error('Erro ao buscar tarefas', error);
-//     throw error;
-//   }
-// };
+export const loginUser = async (credentials, router) => {
+  try {
+    const response = await api.post(
+      '/api/authentication/authenticate',
+      credentials
+    );
+    const { token } = response.data;
 
-// // Função para criar uma nova tarefa
-// export const createTask = async (taskData) => {
-//   try {
-//     const response = await api.post('/kanban/tasks', taskData); // Exemplo de endpoint para criação de tarefa
-//     return response.data;
-//   } catch (error) {
-//     console.error('Erro ao criar tarefa', error);
-//     throw error;
-//   }
-// };
+    if (token) {
+      localStorage.setItem('authToken', token);
+      router.push('/kanban');
+    } else {
+      throw new Error('Token not received');
+    }
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw error;
+  }
+};

@@ -7,14 +7,21 @@
       :columns="userFields.length"
       :submitHandler="saveUser"
     />
+    <Popup ref="popup" />
   </div>
 </template>
 
 <script setup>
-import LoadingSpinner from '../../../components/LoadingSpinner.vue';
-import BaseForm from '../../../components/BaseForm.vue';
-import { register } from '../../../services/api.js';
 import { ref } from 'vue';
+import messages from '../../../utils/messages';
+import Popup from '../../../components/Popup.vue';
+import { register } from '../../../services/api.js';
+import BaseForm from '../../../components/BaseForm.vue';
+import LoadingSpinner from '../../../components/LoadingSpinner.vue';
+
+const loading = ref(false);
+const popup = ref(null);
+const emit = defineEmits();
 
 const userFields = [
   { name: 'username', label: 'Username', type: 'text' },
@@ -22,18 +29,28 @@ const userFields = [
   { name: 'password', label: 'Password', type: 'password' },
 ];
 
-const loading = ref(false);
-
 async function saveUser(formData) {
   loading.value = true;
-  
+
   try {
     const response = await register(formData);
+    console.log(response);
+    if (response) {
+      triggerPopup(messages.userRegister);
+    }
+  } catch (error) {
+    triggerPopup(messages.registerError);
   } finally {
     loading.value = false;
-    console.log(response);
+    setTimeout(() => {
+      emit('closeModal');
+    }, 3000);
   }
 }
+
+const triggerPopup = (message) => {
+  popup.value.showPopup(message);
+};
 </script>
 
 <style scoped>

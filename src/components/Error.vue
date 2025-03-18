@@ -1,13 +1,12 @@
 <template>
   <div class="error-container">
-    <h1>Error 404</h1>
+    <h1>Error</h1>
     <p>The page you are looking for was not found.</p>
     <router-link to="/">Back to the main page</router-link>
   </div>
 </template>
 
-<script setup>
-</script>
+<script setup></script>
 
 <style scoped>
 .error-container {

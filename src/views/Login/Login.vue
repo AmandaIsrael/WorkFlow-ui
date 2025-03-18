@@ -2,8 +2,13 @@
   <div class="login-container">
     <div class="login-card">
       <h1>Login</h1>
+      <LoadingSpinner :loading="loading" />
       <form @submit.prevent="handleLogin">
-        <input type="text" v-model="username" placeholder="User" />
+        <input
+          type="text"
+          v-model="username"
+          placeholder="Username or e-mail"
+        />
         <div class="password-container">
           <input
             :type="showPassword ? 'text' : 'password'"
@@ -14,7 +19,9 @@
             <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
           </span>
         </div>
-        <button type="submit">Sign-in</button>
+        <button type="submit" @click="handleLogin()" :disabled="loading">
+          Sign-in
+        </button>
       </form>
       <button type="submit" class="sign-up" @click="openAddUser()">
         Sign-up
@@ -23,18 +30,26 @@
 
     <div v-if="isOpenModal" class="modal-overlay" @click="closeModal">
       <div class="add-user-modal" @click.stop>
-        <AddUser />
+        <AddUser ref="AddUser" @closeModal="closeModal" />
       </div>
     </div>
+    <Popup ref="popup" />
   </div>
 </template>
 
 <script>
+import { useRouter } from 'vue-router';
 import AddUser from './Modal/AddUser.vue';
+import messages from '../../utils/messages';
+import { loginUser } from '../../services/api';
+import LoadingSpinner from '../../components/LoadingSpinner.vue';
+import Popup from '../../components/Popup.vue';
 
 export default {
   components: {
     AddUser,
+    LoadingSpinner,
+    Popup,
   },
   data() {
     return {
@@ -42,12 +57,30 @@ export default {
       password: '',
       showPassword: false,
       isOpenModal: false,
+      loading: false,
+      router: useRouter(),
     };
   },
   methods: {
-    handleLogin() {
-      console.log('Login clicado:', this.username, this.password);
-      // Simulação de login, substitua pela lógica real
+    async handleLogin() {
+      this.loading = true;
+      const credentials = {
+        subject: this.username,
+        password: this.password,
+      };
+
+      try {
+        await loginUser(credentials, this.router);
+      } catch (error) {
+        const message =
+          error.response?.status === 403
+            ? messages.invalidCredentials
+            : messages.loginError;
+
+        this.triggerPopup(message);
+      } finally {
+        this.loading = false;
+      }
     },
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
@@ -57,6 +90,9 @@ export default {
     },
     closeModal() {
       this.isOpenModal = false;
+    },
+    triggerPopup(message) {
+      this.$refs.popup.showPopup(message);
     },
   },
 };

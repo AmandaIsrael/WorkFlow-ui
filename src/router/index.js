@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Kanban from '../views/Kanban/Kanban.vue';
 import AddTask from '../views/AddTask.vue';
 import Login from '../views/Login/Login.vue';
-import Error404 from '../components/Error404.vue'
+import Error from '../components/Error.vue';
 
 const routes = [
   {
@@ -27,8 +27,8 @@ const routes = [
   },
   {
     path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: Error404,
+    name: 'NotFoundPage',
+    component: Error,
   },
 ];
 
