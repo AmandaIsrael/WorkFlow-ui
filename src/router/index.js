@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Kanban from '../views/Kanban/Kanban.vue';
-import AddTask from '../views/AddTask.vue';
+import AddTask from '../views/Kanban/Modal/AddTask.vue';
 import Login from '../views/Login/Login.vue';
 import Error from '../components/Error.vue';
 

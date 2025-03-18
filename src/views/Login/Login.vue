@@ -70,8 +70,11 @@ export default {
       };
 
       try {
-        await loginUser(credentials, this.router);
-      } catch (error) {
+        const response = await loginUser(credentials, this.router);
+        if(response) {
+          router.push('/kanban');
+        }
+      } catch(error) {
         const message =
           error.response?.status === 403
             ? messages.invalidCredentials
@@ -80,7 +83,6 @@ export default {
         this.triggerPopup(message);
       } finally {
         this.loading = false;
-        router.push('/kanban');
       }
     },
     togglePasswordVisibility() {

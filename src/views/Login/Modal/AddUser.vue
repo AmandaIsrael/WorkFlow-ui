@@ -35,13 +35,13 @@ async function saveUser(formData) {
 
   try {
     const response = await register(formData);
-    if (response) {
+    if(response) {
       triggerPopup(messages.userRegister);
       setTimeout(() => {
         router.push('/kanban');
       }, 2000);
     }
-  } catch (error) {
+  } catch(error) {
     triggerPopup(messages.registerError);
   } finally {
     loading.value = false;

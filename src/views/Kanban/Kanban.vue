@@ -1,47 +1,46 @@
 <template>
   <div class="kanban">
-    <div class="columns">
-      <div class="column">
-        <h2 class="column-title to-do">To-do</h2>
-        <div v-for="task in todoTasks" :key="task.id" class="task">
-          {{ task.name }}
-        </div>
-        <button class="add-task-btn" @click="openAddTask('todo')">
-          Add Task
-        </button>
+    <div class="top-bar">
+      <img
+        src="/profile.png"
+        alt="User Icon"
+        class="user-icon"
+        @click="toggleDropdown"
+      />
+      <div v-if="isDropdownVisible" class="dropdown-menu">
+        <ul>
+          <li><button class="button-menu" @click="logout">Logout</button></li>
+        </ul>
       </div>
+    </div>
 
-      <div class="column">
-        <h2 class="column-title doing">Doing</h2>
-        <div v-for="task in doingTasks" :key="task.id" class="task">
-          {{ task.name }}
+    <!-- <div class="categories-container">
+      <button @click="addCategory">
+        Add Category
+      </button>
+      <div class="categories">
+        <div v-for="category in categories" :key="category.id" class="category">
+          <h2 class="category-title">{{ category.name }}</h2>
+          <div v-for="task in category.tasks" :key="task.id" class="task">
+            {{ task.name }}
+          </div>
+          <button class="add-task-btn" @click="openAddTask(category.id)">
+            Add Task
+          </button>
         </div>
-        <button class="add-task-btn" @click="openAddTask('doing')">
-          Add Task
-        </button>
-      </div>
-
-      <div class="column">
-        <h2 class="column-title complete">Complete</h2>
-        <div v-for="task in completeTasks" :key="task.id" class="task">
-          {{ task.name }}
-        </div>
-        <button class="add-task-btn" @click="openAddTask('complete')">
-          Add Task
-        </button>
       </div>
     </div>
 
     <div v-if="isModalOpen" class="modal-overlay" @click="closeModal">
       <div class="add-task-modal" @click.stop>
-        <AddTask :column="column" @task-added="addTask" />
+        <AddTask :categoryId="selectedCategoryId" @task-added="addTask" />
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
-import AddTask from '../AddTask.vue';
+import AddTask from './Modal/AddTask.vue';
 
 export default {
   components: {
@@ -49,27 +48,38 @@ export default {
   },
   data() {
     return {
-      todoTasks: [],
-      doingTasks: [],
-      completeTasks: [],
+      categories: [],
       isModalOpen: false,
-      column: '',
+      selectedCategoryId: null,
+      isDropdownVisible: false,
     };
   },
   methods: {
-    openAddTask(status) {
-      this.column = status;
+    async fetchCategories() {
+      // Simula chamada à API
+      // this.categories = await this.getCategoriesFromAPI();
+    },
+    addCategory() {
+      // Adiciona categoria via API
+    },
+    openAddTask(categoryId) {
+      this.selectedCategoryId = categoryId;
       this.isModalOpen = true;
     },
     closeModal() {
       this.isModalOpen = false;
     },
-    addTask(task) {
-      if (task) {
-        this.$store.dispatch('addTask', { status: this.column, task });
-        this.isModalOpen = false;
-      }
+    toggleDropdown() {
+      this.isDropdownVisible = !this.isDropdownVisible;
     },
+    logout() {
+      // Lógica de logout
+      console.log('Usuário deslogado!');
+      this.isDropdownVisible = false; // Fechar o dropdown após clicar em sair
+    },
+  },
+  mounted() {
+    this.fetchCategories();
   },
 };
 </script>
@@ -78,114 +88,94 @@ export default {
 .kanban {
   padding: 20px;
   background-color: #242424;
-  color: black;
+  color: white;
   height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
   position: relative;
 }
 
-.columns {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
+.top-bar {
   width: 100%;
-  border-radius: 10px;
-}
-
-.column {
-  width: 30%;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  min-height: 400px;
-  box-sizing: border-box;
-  padding-bottom: 50px;
-}
-
-.column-title {
-  font-size: 24px;
-  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
   padding: 10px;
-  border-radius: 10px;
+  position: relative;
 }
 
-.to-do {
-  background-color: #ffb74d;
+.user-icon {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
 }
 
-.doing {
-  background-color: #ffeb3b;
+.dropdown-menu {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background-color: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1); 
+  padding: 10px;
+  width: 150px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
 }
 
-.complete {
-  background-color: #81c784;
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  margin: 5px 0;
+}
+
+.button-menu {
+  width: 100%;
+  padding: 10px;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  border-radius: 4px;
+}
+
+.button-menu:hover {
+  color: #646cff;
+}
+
+.categories-container {
+  overflow-x: auto;
+  width: 100%;
+  padding: 10px;
+}
+
+.categories {
+  display: flex;
+  gap: 20px;
+}
+
+.category {
+  min-width: 300px;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .task {
   background-color: white;
   color: black;
-  padding: 12px;
-  margin: 10px;
+  padding: 10px;
+  margin: 10px 0;
   border-radius: 6px;
-  font-size: 16px;
-  border-left: 8px solid #646cff;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.add-task-btn {
-  background-color: #646cff;
-  color: white;
-  padding: 12px;
-  margin-top: 20px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 90%;
-  max-width: 150px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.add-task-btn:hover {
-  background-color: #535bf2;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.add-task-modal {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
-  width: 400px;
-  max-width: 90%;
-  position: relative;
-}
-
-@media (max-width: 768px) {
-  .columns {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .column {
-    width: 90%;
-    margin-bottom: 20px;
-  }
+  border-left: 4px solid #646cff;
 }
 </style>
