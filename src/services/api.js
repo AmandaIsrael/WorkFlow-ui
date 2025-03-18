@@ -10,7 +10,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
-    if (token) {
+    if (token && !config.url.includes('/api/authentication/')) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -28,6 +28,9 @@ export const register = async (credentials) => {
       '/api/authentication/register',
       credentials
     );
+
+    storageToken(response);
+
     return response.data;
   } catch (error) {
     console.error('Registration failed:', error);
@@ -41,16 +44,19 @@ export const loginUser = async (credentials, router) => {
       '/api/authentication/authenticate',
       credentials
     );
-    const { token } = response.data;
 
-    if (token) {
-      localStorage.setItem('authToken', token);
-      router.push('/kanban');
-    } else {
-      throw new Error('Token not received');
-    }
+    storageToken(response);
   } catch (error) {
     console.error('Login failed:', error);
     throw error;
   }
 };
+
+function storageToken(response) {
+  const { token } = response.data;
+  if (token) {
+    localStorage.setItem('authToken', token);
+  } else {
+    throw new Error('Token not received');
+  }
+}

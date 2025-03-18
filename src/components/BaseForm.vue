@@ -8,10 +8,11 @@
           v-model="formData[field.name]"
           :placeholder="field.placeholder || ''"
           :id="field.name"
+          :required="field.required"
         />
       </div>
     </div>
-    <button type="submit">Salvar</button>
+    <button type="submit" :disabled="!isFormValid">Salvar</button>
   </form>
 </template>
 
@@ -40,6 +41,12 @@ const gridStyle = computed(() => ({
   gridTemplateColumns: '1fr',
   gap: '15px',
 }));
+
+const isFormValid = computed(() => {
+  return props.fields.every(
+    (field) => !field.required || formData.value[field.name]?.trim()
+  );
+});
 
 function initializeForm() {
   formData.value = Object.fromEntries(

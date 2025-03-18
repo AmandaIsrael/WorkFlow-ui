@@ -13,6 +13,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import messages from '../../../utils/messages';
 import Popup from '../../../components/Popup.vue';
 import { register } from '../../../services/api.js';
@@ -21,12 +22,12 @@ import LoadingSpinner from '../../../components/LoadingSpinner.vue';
 
 const loading = ref(false);
 const popup = ref(null);
-const emit = defineEmits();
+const router = useRouter();
 
 const userFields = [
-  { name: 'username', label: 'Username', type: 'text' },
-  { name: 'email', label: 'E-mail', type: 'email' },
-  { name: 'password', label: 'Password', type: 'password' },
+  { name: 'username', label: 'Username', type: 'text', required: true },
+  { name: 'email', label: 'E-mail', type: 'email', required: true },
+  { name: 'password', label: 'Password', type: 'password', required: true },
 ];
 
 async function saveUser(formData) {
@@ -34,17 +35,16 @@ async function saveUser(formData) {
 
   try {
     const response = await register(formData);
-    console.log(response);
     if (response) {
       triggerPopup(messages.userRegister);
+      setTimeout(() => {
+        router.push('/kanban');
+      }, 2000);
     }
   } catch (error) {
     triggerPopup(messages.registerError);
   } finally {
     loading.value = false;
-    setTimeout(() => {
-      emit('closeModal');
-    }, 3000);
   }
 }
 

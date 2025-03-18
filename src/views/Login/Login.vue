@@ -30,7 +30,7 @@
 
     <div v-if="isOpenModal" class="modal-overlay" @click="closeModal">
       <div class="add-user-modal" @click.stop>
-        <AddUser ref="AddUser" @closeModal="closeModal" />
+        <AddUser ref="AddUser" />
       </div>
     </div>
     <Popup ref="popup" />
@@ -80,6 +80,7 @@ export default {
         this.triggerPopup(message);
       } finally {
         this.loading = false;
+        router.push('/kanban');
       }
     },
     togglePasswordVisibility() {
