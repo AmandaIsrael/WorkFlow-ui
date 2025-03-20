@@ -28,11 +28,12 @@
       </button>
     </div>
 
-    <div v-if="isOpenModal" class="modal-overlay" @click="closeModal">
+    <div v-if="isModalOpen" class="modal-overlay" @click="closeModal">
       <div class="add-user-modal" @click.stop>
         <AddUser ref="AddUser" />
       </div>
     </div>
+
     <Popup ref="popup" />
   </div>
 </template>
@@ -42,8 +43,8 @@ import { useRouter } from 'vue-router';
 import AddUser from './Modal/AddUser.vue';
 import messages from '../../utils/messages';
 import { loginUser } from '../../services/api';
-import LoadingSpinner from '../../components/LoadingSpinner.vue';
 import Popup from '../../components/Popup.vue';
+import LoadingSpinner from '../../components/LoadingSpinner.vue';
 
 export default {
   components: {
@@ -56,7 +57,7 @@ export default {
       username: '',
       password: '',
       showPassword: false,
-      isOpenModal: false,
+      isModalOpen: false,
       loading: false,
       router: useRouter(),
     };
@@ -71,10 +72,10 @@ export default {
 
       try {
         const response = await loginUser(credentials, this.router);
-        if(response) {
+        if (response) {
           router.push('/kanban');
         }
-      } catch(error) {
+      } catch (error) {
         const message =
           error.response?.status === 403
             ? messages.invalidCredentials
@@ -89,10 +90,10 @@ export default {
       this.showPassword = !this.showPassword;
     },
     openAddUser() {
-      this.isOpenModal = true;
+      this.isModalOpen = true;
     },
     closeModal() {
-      this.isOpenModal = false;
+      this.isModalOpen = false;
     },
     triggerPopup(message) {
       this.$refs.popup.showPopup(message);
@@ -111,7 +112,7 @@ export default {
 }
 
 .login-card {
-  background-color: #ffffff;
+  background-color: #eceaea;
   padding: 2rem;
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
@@ -144,7 +145,7 @@ h1 {
 
 .sign-up {
   width: 100%;
-  background-color: #ffffff;
+  background-color: #eceaea;
   color: #646cff;
   font-size: 16px;
   font-weight: bold;
@@ -166,7 +167,7 @@ h1 {
 }
 
 .add-user-modal {
-  background-color: white;
+  background-color: #eceaea;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);

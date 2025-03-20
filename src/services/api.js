@@ -10,7 +10,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
-    if(token && !config.url.includes('/api/authentication/')) {
+    if (token && !config.url.includes('/api/authentication/')) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -32,13 +32,13 @@ export const register = async (credentials) => {
     storageToken(response);
 
     return response.data;
-  } catch(error) {
+  } catch (error) {
     console.error('Registration failed:', error);
     throw error;
   }
 };
 
-export const loginUser = async (credentials, router) => {
+export const loginUser = async (credentials) => {
   try {
     const response = await api.post(
       '/api/authentication/authenticate',
@@ -48,7 +48,7 @@ export const loginUser = async (credentials, router) => {
     storageToken(response);
 
     return response.data;
-  } catch(error) {
+  } catch (error) {
     console.error('Login failed:', error);
     throw error;
   }
@@ -56,9 +56,44 @@ export const loginUser = async (credentials, router) => {
 
 function storageToken(response) {
   const { token } = response.data;
-  if(token) {
+  if (token) {
     localStorage.setItem('authToken', token);
   } else {
     throw new Error('Token not received');
   }
 }
+
+export const getCategories = async () => {
+  try {
+    const response = await api.get('/api/categoria');
+
+    return response.data;
+  } catch (error) {
+    console.error('Error loading categories');
+    throw error;
+  }
+};
+
+export const postCategory = async (data) => {
+  try {
+    console.log(data);
+    const response = await api.post('/api/categoria', data);
+
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Category registration failed:', error);
+    throw error;
+  }
+};
+
+export const postTask = async (data) => {
+  try {
+    const response = await api.post('/api/tarefa', data);
+
+    return response.data;
+  } catch (error) {
+    console.error('Task registration failed:', error);
+    throw error;
+  }
+};

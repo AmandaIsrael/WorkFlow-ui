@@ -40,7 +40,7 @@ defineExpose({
 
 .popup {
   background-color: #646cff;
-  color: white;
+  color: #eceaea;
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
