@@ -63,9 +63,19 @@ function storageToken(response) {
   }
 }
 
+export const logout = async () => {
+  try {
+    const response = await api.post('/api/authentication/logout');
+    return response;
+  } catch (error) {
+    console.error('Logout failed:', error);
+    throw error;
+  }
+};
+
 export const getCategories = async () => {
   try {
-    const response = await api.get('/api/categoria');
+    const response = await api.get('/api/category');
 
     return response.data;
   } catch (error) {
@@ -76,10 +86,8 @@ export const getCategories = async () => {
 
 export const postCategory = async (data) => {
   try {
-    console.log(data);
-    const response = await api.post('/api/categoria', data);
+    const response = await api.post('/api/category', data);
 
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error('Category registration failed:', error);
@@ -89,7 +97,7 @@ export const postCategory = async (data) => {
 
 export const postTask = async (data) => {
   try {
-    const response = await api.post('/api/tarefa', data);
+    const response = await api.post('/api/task', data);
 
     return response.data;
   } catch (error) {

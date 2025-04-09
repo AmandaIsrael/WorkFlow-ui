@@ -25,11 +25,41 @@ const popup = ref(null);
 const router = useRouter();
 const emit = defineEmits(['reloadKanban']);
 
+const props = defineProps({
+  categoryId: {
+    type: Number,
+    required: true,
+  },
+});
+
 const taskFields = [
   { name: 'title', label: 'Título', type: 'text', required: true },
   { name: 'description', label: 'Descrição', type: 'text', required: true },
-  { name: 'priority', label: 'Prioridade', type: 'number', required: true },
-  { name: 'status', label: 'Status', type: 'text', required: false },
+  {
+    name: 'priority',
+    label: 'Prioridade',
+    type: 'select',
+    required: true,
+    options: [
+      { label: 'Low', value: 0 },
+      { label: 'Medium', value: 1 },
+      { label: 'High', value: 2 },
+    ],
+  },
+  {
+    name: 'status',
+    label: 'Status',
+    type: 'select',
+    required: false,
+    options: [
+      { label: 'Pending', value: 0 },
+      { label: 'In progress', value: 1 },
+      { label: 'Completed', value: 2 },
+      { label: 'Blocked', value: 3 },
+      { label: 'Canceled', value: 4 },
+      { label: 'Late', value: 5 },
+    ],
+  },
   { name: 'deadline', label: 'Prazo', type: 'date', required: false },
 ];
 
@@ -37,6 +67,7 @@ async function saveTask(formData) {
   loading.value = true;
 
   try {
+    formData.category_id = props.categoryId;
     const response = await postTask(formData);
     if (response) {
       triggerPopup(messages.taskRegister);

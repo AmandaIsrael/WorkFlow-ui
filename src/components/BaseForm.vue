@@ -15,7 +15,7 @@
         </div>
 
         <!-- icon -->
-        <div v-else-if="field.type === 'select'" class="icon-selector">
+        <div v-else-if="field.name === 'icon'" class="icon-selector">
           <div class="icon-grid">
             <button
               v-for="option in field.options"
@@ -26,6 +26,23 @@
               <i :class="option" class="icons"></i>
             </button>
           </div>
+        </div>
+
+        <!-- select -->
+        <div v-else-if="field.type === 'select'">
+          <select
+            v-model="formData[field.name]"
+            :id="field.name"
+            :required="field.required"
+          >
+            <option
+              v-for="option in field.options"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
         </div>
 
         <input
@@ -88,8 +105,8 @@ function getInitialValue(field) {
     return '#000000';
   } else if (field.type === 'date') {
     return new Date().toISOString().split('T')[0];
-  } else if (field.type === 'number') {
-    return 0;
+  } else if (field.type === 'number' || field.type === 'select') {
+    return field.options?.[0]?.value ?? 0;
   }
   return '';
 }
@@ -190,5 +207,14 @@ function handleSubmit() {
 .icons {
   font-size: 32px;
   color: #333;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 </style>

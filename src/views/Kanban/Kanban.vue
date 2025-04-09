@@ -27,8 +27,8 @@
             <i :class="category.icon" class="category-icon"></i>
             <h2>{{ category.name }}</h2>
           </div>
-          <div v-for="task in category.tasks" :key="task.id" class="task">
-            {{ task.name }}
+          <div v-for="task in category.taskList" :key="task.id" class="task">
+            {{ task.title }}
           </div>
           <button class="add-task" @click="openAddTask(category.id)">
             Add Task
@@ -46,13 +46,17 @@
       @click="closeCategoryModal"
     >
       <div class="add-modal" @click.stop>
-        <AddCategory ref="AddCategory" @reloadKanban="reloadKanban" />
+        <AddCategory ref="AddCategory" @reloadKanban="handleCategoryUpdate" />
       </div>
     </div>
 
     <div v-if="isTaskModalOpen" class="modal-overlay" @click="closeTaskModal">
       <div class="add-modal" @click.stop>
-        <AddTask ref="AddTask" @reloadKanban="reloadKanban" />
+        <AddTask
+          ref="AddTask"
+          :categoryId="selectedCategoryId"
+          @reloadKanban="handleTaskUpdate"
+        />
       </div>
     </div>
 
@@ -66,7 +70,7 @@ import AddTask from './Modal/AddTask.vue';
 import messages from '../../utils/messages';
 import Popup from '../../components/Popup.vue';
 import AddCategory from './Modal/AddCategory.vue';
-import { getCategories } from '../../services/api.js';
+import { getCategories, logout } from '../../services/api.js';
 import LoadingSpinner from '../../components/LoadingSpinner.vue';
 
 export default {
@@ -100,7 +104,6 @@ export default {
         this.loading = false;
       }
     },
-
     openAddCategory() {
       this.isCategoryModalOpen = true;
     },
@@ -111,8 +114,12 @@ export default {
     closeCategoryModal() {
       this.isCategoryModalOpen = false;
     },
-    reloadKanban() {
+    handleCategoryUpdate() {
       this.closeCategoryModal();
+      this.fetchCategoriesWithTasks();
+    },
+    handleTaskUpdate() {
+      this.closeTaskModal();
       this.fetchCategoriesWithTasks();
     },
     closeTaskModal() {
@@ -121,10 +128,21 @@ export default {
     toggleDropdown() {
       this.isDropdownVisible = !this.isDropdownVisible;
     },
-    logout() {
-      // Lógica de logout
-      console.log('Usuário deslogado!');
-      this.isDropdownVisible = false;
+    async logout() {
+      this.loading = true;
+      try {
+        const response = await logout();
+        if (response) {
+          console.log(response);
+        }
+      } catch (error) {
+        error.response
+          ? this.router.push('/error')
+          : triggerPopup(messages.logoutError);
+      } finally {
+        this.loading = false;
+        this.isDropdownVisible = false;
+      }
     },
     triggerPopup(message) {
       this.$refs.popup.showPopup(message);
@@ -154,6 +172,7 @@ export default {
   justify-content: flex-end;
   align-items: center;
   padding: 10px;
+  margin-bottom: 20px;
 }
 
 .user-icon {
@@ -235,7 +254,13 @@ li {
   padding: 10px;
   margin: 10px 0;
   border-radius: 6px;
-  border-left: 4px solid #646cff;
+  border-left: 10px solid #646cff;
+}
+
+.task:hover {
+  cursor: pointer;
+  transition: 0.3s ease;
+  background-color: #e0e1ff
 }
 
 .add-category button {
@@ -286,6 +311,13 @@ li {
   padding: 10px;
   display: flex;
   justify-content: center;
+  margin-bottom: 10px;
+}
+
+.category-head:hover {
+  cursor: pointer;
+  transition: 0.3s ease;
+  background-color: #e0e1ff
 }
 
 .category-icon {
