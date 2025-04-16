@@ -22,22 +22,36 @@
           :key="category.id"
           :style="{ backgroundColor: category.color }"
           class="category"
+          @drop="handleDrop($event, category)"
+          @dragover="handleDragOver($event)"
         >
-          <div class="category-head">
+          <div class="category-head" @click="openEditCategory(category.id)">
             <i :class="category.icon" class="category-icon"></i>
             <h2>{{ category.name }}</h2>
           </div>
-          <div v-for="task in category.taskList" :key="task.id" class="task">
-            {{ task.title }}
+          <div
+            v-for="task in category.taskList"
+            :key="task.id"
+            class="task-head"
+            draggable="true"
+            @dragstart="handleDragStart($event, task, category)"
+          >
+            <i
+              class="fa-solid fa-grip-vertical drag-icon"
+              title="Arraste para mover"
+            ></i>
+            <div class="task" @click="openEditTask(category.id, task.id)">
+              {{ task.title }}
+            </div>
           </div>
-          <button class="add-task" @click="openAddTask(category.id)">
+          <button class="submit-task" @click="openSubmitTask(category.id)">
             Add Task
           </button>
         </div>
       </div>
     </div>
-    <div class="add-category">
-      <button @click="openAddCategory">Add Category</button>
+    <div class="submit-category">
+      <button @click="openSubmitCategory">Add Category</button>
     </div>
 
     <div
@@ -46,14 +60,21 @@
       @click="closeCategoryModal"
     >
       <div class="add-modal" @click.stop>
-        <AddCategory ref="AddCategory" @reloadKanban="handleCategoryUpdate" />
+        <SubmitCategory
+          ref="SubmitCategory"
+          :isEdit="selectedCategoryId != null"
+          :categoryId="selectedCategoryId"
+          @reloadKanban="handleCategoryUpdate"
+        />
       </div>
     </div>
 
     <div v-if="isTaskModalOpen" class="modal-overlay" @click="closeTaskModal">
       <div class="add-modal" @click.stop>
-        <AddTask
-          ref="AddTask"
+        <SubmitTask
+          ref="SubmitTask"
+          :isEdit="selectedTaskId != null"
+          :taskId="selectedTaskId"
           :categoryId="selectedCategoryId"
           @reloadKanban="handleTaskUpdate"
         />
@@ -66,17 +87,21 @@
 
 <script>
 import { useRouter } from 'vue-router';
-import AddTask from './Modal/AddTask.vue';
+import SubmitTask from './Modal/SubmitTask.vue';
 import messages from '../../utils/messages';
 import Popup from '../../components/Popup.vue';
-import AddCategory from './Modal/AddCategory.vue';
-import { getCategories, logout } from '../../services/api.js';
+import SubmitCategory from './Modal/SubmitCategory.vue';
+import {
+  putTaskByCategoryId,
+  getCategories,
+  logout,
+} from '../../services/api.js';
 import LoadingSpinner from '../../components/LoadingSpinner.vue';
 
 export default {
   components: {
-    AddCategory,
-    AddTask,
+    SubmitCategory,
+    SubmitTask,
     LoadingSpinner,
     Popup,
   },
@@ -86,9 +111,11 @@ export default {
       isCategoryModalOpen: false,
       isTaskModalOpen: false,
       selectedCategoryId: null,
+      selectedTaskId: null,
       isDropdownVisible: false,
       loading: false,
       router: useRouter(),
+      isEditCategory: false,
     };
   },
   methods: {
@@ -104,15 +131,31 @@ export default {
         this.loading = false;
       }
     },
-    openAddCategory() {
+    openSubmitCategory() {
       this.isCategoryModalOpen = true;
     },
-    openAddTask(categoryId) {
+    openEditCategory(categoryId) {
       this.selectedCategoryId = categoryId;
+      this.isEditCategory = true;
+      this.isCategoryModalOpen = true;
+    },
+    openSubmitTask(categoryId) {
+      this.selectedCategoryId = categoryId;
+      this.isTaskModalOpen = true;
+    },
+    openEditTask(categoryId, taskId) {
+      this.selectedCategoryId = categoryId;
+      this.selectedTaskId = taskId;
       this.isTaskModalOpen = true;
     },
     closeCategoryModal() {
       this.isCategoryModalOpen = false;
+      this.selectedCategoryId = null;
+    },
+    closeTaskModal() {
+      this.isTaskModalOpen = false;
+      this.selectedCategoryId = null;
+      this.selectedTaskId = null;
     },
     handleCategoryUpdate() {
       this.closeCategoryModal();
@@ -121,9 +164,6 @@ export default {
     handleTaskUpdate() {
       this.closeTaskModal();
       this.fetchCategoriesWithTasks();
-    },
-    closeTaskModal() {
-      this.isTaskModalOpen = false;
     },
     toggleDropdown() {
       this.isDropdownVisible = !this.isDropdownVisible;
@@ -146,6 +186,32 @@ export default {
     },
     triggerPopup(message) {
       this.$refs.popup.showPopup(message);
+    },
+    handleDragStart(event, task) {
+      event.dataTransfer.setData('taskId', task.id);
+    },
+    handleDragOver(event) {
+      event.preventDefault();
+    },
+    handleDrop(event, targetCategory) {
+      if (targetCategory !== undefined) {
+        const taskId = event.dataTransfer.getData('taskId');
+        this.updateTaskCategory(taskId, targetCategory.id);
+      }
+    },
+    async updateTaskCategory(taskId, categoryId) {
+      this.laoding = true;
+      try {
+        const response = await putTaskByCategoryId(taskId, categoryId);
+        if (response) {
+          this.triggerPopup(messages.taskUpdate);
+        }
+      } catch {
+        this.triggerPopup(messages.taskUpdateError);
+      } finally {
+        this.loading = false;
+        this.fetchCategoriesWithTasks();
+      }
     },
   },
   mounted() {
@@ -183,8 +249,7 @@ export default {
 
 .dropdown-menu {
   position: absolute;
-  top: 60px;
-  right: 0;
+  top: 80px;
   background-color: #ffffff;
   border-radius: 6px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
@@ -248,22 +313,37 @@ li {
   height: 100%;
 }
 
-.task {
+.task-head {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 10px 0;
   background-color: white;
   color: black;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.drag-icon {
+  cursor: grab;
+  color: #888;
   padding: 10px;
-  margin: 10px 0;
-  border-radius: 6px;
-  border-left: 10px solid #646cff;
+  flex-shrink: 0;
+}
+
+.task {
+  flex-grow: 1;
+  padding: 10px;
+  transition: background-color 0.3s ease;
 }
 
 .task:hover {
+  background-color: #c4c6ff;
   cursor: pointer;
-  transition: 0.3s ease;
-  background-color: #e0e1ff
 }
 
-.add-category button {
+.submit-category button {
   padding: 10px 20px;
   border-radius: 6px;
   border: none;
@@ -271,8 +351,7 @@ li {
   transition: 0.3s ease;
 }
 
-.add-task {
-  margin-top: auto;
+.submit-task {
   padding: 10px;
   border: none;
   border-radius: 6px;
@@ -317,7 +396,7 @@ li {
 .category-head:hover {
   cursor: pointer;
   transition: 0.3s ease;
-  background-color: #e0e1ff
+  background-color: #c4c6ff;
 }
 
 .category-icon {

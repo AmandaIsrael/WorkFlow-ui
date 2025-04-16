@@ -7,13 +7,13 @@ export default createStore({
     completeTasks: [],
   },
   mutations: {
-    addTask(state, { status, task }) {
+    submitTask(state, { status, task }) {
       state[`${status}Tasks`].push(task);
     },
   },
   actions: {
-    addTask({ commit }, { status, task }) {
-      commit('addTask', { status, task });
+    submitTask({ commit }, { status, task }) {
+      commit('submitTask', { status, task });
     },
   },
 });

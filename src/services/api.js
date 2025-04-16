@@ -84,6 +84,17 @@ export const getCategories = async () => {
   }
 };
 
+export const getByIdCategory = async (id) => {
+  try {
+    const response = await api.get(`/api/category/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.log('Error loading category with id: ', id);
+    throw error;
+  }
+};
+
 export const postCategory = async (data) => {
   try {
     const response = await api.post('/api/category', data);
@@ -95,6 +106,28 @@ export const postCategory = async (data) => {
   }
 };
 
+export const putCategory = async (data, id) => {
+  try {
+    const response = await api.put(`/api/category/${id}`, data);
+
+    return response.data;
+  } catch (error) {
+    console.error('Error editing category with id: ', id);
+    throw error;
+  }
+};
+
+export const getByIdTask = async (id) => {
+  try {
+    const response = await api.get(`/api/task/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.log('Error loading task with id: ', id);
+    throw error;
+  }
+};
+
 export const postTask = async (data) => {
   try {
     const response = await api.post('/api/task', data);
@@ -102,6 +135,28 @@ export const postTask = async (data) => {
     return response.data;
   } catch (error) {
     console.error('Task registration failed:', error);
+    throw error;
+  }
+};
+
+export const putTask = async (data, id) => {
+  try {
+    const response = await api.put(`/api/task/${id}`, data);
+
+    return response.data;
+  } catch (error) {
+    console.error('Error editing task with id: ', id);
+    throw error;
+  }
+};
+
+export const putTaskByCategoryId = async (id, categoryId) => {
+  try {
+    const response = await api.put(`/api/task/${id}/${categoryId}`);
+
+    return response.data;
+  } catch (error) {
+    console.error('Error editing category of the task with id: ', id);
     throw error;
   }
 };

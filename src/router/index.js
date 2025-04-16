@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Kanban from '../views/Kanban/Kanban.vue';
-import AddTask from '../views/Kanban/Modal/AddTask.vue';
+import SubmitTask from '../views/Kanban/Modal/SubmitTask.vue';
 import Login from '../views/Login/Login.vue';
 import Error from '../components/Error.vue';
 
@@ -21,9 +21,9 @@ const routes = [
     component: Kanban,
   },
   {
-    path: '/add-task/:column',
-    name: 'add-task',
-    component: AddTask,
+    path: '/submit-task/:column',
+    name: 'submit-task',
+    component: SubmitTask,
   },
   {
     path: '/:pathMatch(.*)*',

@@ -78,7 +78,19 @@ const props = defineProps({
   },
 });
 
-const formData = ref({});
+const modelFormData = defineModel('formData');
+const internalFormData = ref({});
+
+const formData = computed({
+  get: () => modelFormData.value ?? internalFormData.value,
+  set: (val) => {
+    if (modelFormData.value !== undefined) {
+      modelFormData.value = val;
+    } else {
+      internalFormData.value = val;
+    }
+  },
+});
 
 const gridStyle = computed(() => ({
   display: 'grid',
