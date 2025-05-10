@@ -1,0 +1,16 @@
+export const iconList = [
+  'fa-solid fa-pencil-alt',
+  'fa-solid fa-check-circle',
+  'fa-solid fa-fire',
+  'fa-solid fa-star',
+  'fa-solid fa-heart',
+  'fa-solid fa-bolt',
+  'fa-solid fa-book',
+  'fa-solid fa-code',
+  'fa-solid fa-lightbulb',
+  'fa-solid fa-music',
+  'fa-solid fa-leaf',
+  'fa-solid fa-globe',
+  'fa-solid fa-calendar-alt',
+  'fa-solid fa-clock',
+];

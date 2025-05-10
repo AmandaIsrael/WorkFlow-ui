@@ -16,42 +16,84 @@
 
     <div class="categories-container">
       <LoadingSpinner :loading="loading" />
+      <div class="header">
+        <div class="search-wrapper">
+          <i class="fa fa-search search-icon"></i>
+          <input
+            type="text"
+            v-model="search"
+            placeholder="Search category's name"
+            @input="filteredCategories"
+            class="search-input"
+          />
+        </div>
+        <input type="date" v-model="deadline" class="date-input" />
+        <div class="submit-category">
+          <button @click="openSubmitCategory">Add Category</button>
+        </div>
+      </div>
       <div class="categories">
         <div
           v-for="category in categories"
           :key="category.id"
-          :style="{ backgroundColor: category.color }"
           class="category"
+          :style="{ '--category-color': category.color }"
           @drop="handleDrop($event, category)"
           @dragover="handleDragOver($event)"
         >
-          <div class="category-head" @click="openEditCategory(category.id)">
+          <div
+            class="category-head"
+            :style="{
+              '--category-color': category.color,
+              color: getTextColor(category.color),
+            }"
+            @click="openEditCategory(category.id)"
+          >
             <i :class="category.icon" class="category-icon"></i>
             <h2>{{ category.name }}</h2>
           </div>
-          <div
-            v-for="task in category.taskList"
-            :key="task.id"
-            class="task-head"
-            draggable="true"
-            @dragstart="handleDragStart($event, task, category)"
-          >
-            <i
-              class="fa-solid fa-grip-vertical drag-icon"
-              title="Arraste para mover"
-            ></i>
-            <div class="task" @click="openEditTask(category.id, task.id)">
-              {{ task.title }}
+          <div class="task-list">
+            <div
+              v-for="task in category.taskList"
+              :key="task.id"
+              class="task-head"
+              draggable="true"
+              @dragstart="handleDragStart($event, task, category)"
+            >
+              <i
+                class="fa-solid fa-grip-vertical drag-icon"
+                title="Drag to move"
+              ></i>
+              <div class="task" @click="openEditTask(category.id, task.id)">
+                <div class="task-title">
+                  {{ task.title }}
+                </div>
+                <div class="task-subject">
+                  {{ status[task.status] }}
+                  <div class="task-subject-icon">
+                    <i
+                      v-if="task.priority === 2"
+                      class="fa-solid fa-fire"
+                      title="priority"
+                    ></i>
+                    <i
+                      v-if="new Date(task.deadline) < new Date()"
+                      class="fa-solid fa-clock"
+                      title="deadline"
+                    ></i>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <button class="submit-task" @click="openSubmitTask(category.id)">
-            Add Task
-          </button>
+          <div
+            class="submit-task"
+            :style="{ '--category-color': category.color }"
+          >
+            <button @click="openSubmitTask(category.id)">Add Task</button>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="submit-category">
-      <button @click="openSubmitCategory">Add Category</button>
     </div>
 
     <div
@@ -116,6 +158,16 @@ export default {
       loading: false,
       router: useRouter(),
       isEditCategory: false,
+      status: [
+        'Pending',
+        'In progress',
+        'Completed',
+        'Blocked',
+        'Canceled',
+        'Late',
+      ],
+      search: '',
+      deadline: new Date().toISOString().split('T')[0],
     };
   },
   methods: {
@@ -126,7 +178,7 @@ export default {
       } catch (error) {
         error.response?.status === 403
           ? this.router.push('/error')
-          : triggerPopup(messages.categoriesError);
+          : this.triggerPopup(messages.categoriesError);
       } finally {
         this.loading = false;
       }
@@ -178,7 +230,7 @@ export default {
       } catch (error) {
         error.response
           ? this.router.push('/error')
-          : triggerPopup(messages.logoutError);
+          : this.triggerPopup(messages.logoutError);
       } finally {
         this.loading = false;
         this.isDropdownVisible = false;
@@ -188,7 +240,9 @@ export default {
       this.$refs.popup.showPopup(message);
     },
     handleDragStart(event, task) {
-      event.dataTransfer.setData('taskId', task.id);
+      if (task?.id) {
+        event.dataTransfer.setData('taskId', task.id);
+      }
     },
     handleDragOver(event) {
       event.preventDefault();
@@ -200,7 +254,7 @@ export default {
       }
     },
     async updateTaskCategory(taskId, categoryId) {
-      this.laoding = true;
+      this.loading = true;
       try {
         const response = await putTaskByCategoryId(taskId, categoryId);
         if (response) {
@@ -212,6 +266,16 @@ export default {
         this.loading = false;
         this.fetchCategoriesWithTasks();
       }
+    },
+    filteredCategories() {},
+    getTextColor(hexColor) {
+      const hex = hexColor.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+
+      const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+      return luminance > 186 ? 'black' : 'white';
     },
   },
   mounted() {
@@ -225,7 +289,8 @@ export default {
   padding: 20px;
   background-color: #242424;
   color: white;
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -286,31 +351,105 @@ li {
   color: #646cff;
 }
 
+.header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.search-wrapper {
+  flex: 3;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  color: #888;
+}
+
+.search-input {
+  padding: 8px 8px 8px 30px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+.date-input {
+  flex: 1;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.submit-category {
+  flex: 1;
+}
+
+.submit-category button {
+  padding: 8px 16px;
+  font-size: 14px;
+  margin: 0;
+}
+
 .categories-container {
   flex-grow: 1;
-  display: flex;
-  flex-direction: column;
   width: 100%;
-  overflow-y: auto;
+  overflow-x: auto;
+  padding: 20px;
+  justify-content: center;
 }
 
 .categories {
   display: flex;
-  flex-wrap: wrap;
   gap: 20px;
-  justify-content: center;
+  align-items: flex-start;
 }
 
 .category {
   min-width: 300px;
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 8px;
+  background-color: var(--category-color);
+  border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.category-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  background-color: var(--category-color);
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.category-head:hover {
+  cursor: pointer;
+  transition: 0.3s ease;
+  background-color: #c4c6ff;
+}
+
+.category-icon {
+  font-size: 25px;
+  margin-right: 15px;
+}
+
+.task-list {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
 }
 
 .task-head {
@@ -335,7 +474,30 @@ li {
 .task {
   flex-grow: 1;
   padding: 10px;
-  transition: background-color 0.3s ease;
+  background-color: white;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+}
+
+.task-title {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.task-subject {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #666;
+}
+
+.task-subject-icon {
+  display: flex;
+  gap: 8px;
+  color: red;
 }
 
 .task:hover {
@@ -343,20 +505,18 @@ li {
   cursor: pointer;
 }
 
-.submit-category button {
-  padding: 10px 20px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s ease;
+.submit-task {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding: 15px;
+  border-radius: 5px;
+  background-color: var(--category-color);
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.submit-task {
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  width: 100%;
+.submit-task button {
+  margin: 0;
 }
 
 .modal-overlay {
@@ -382,26 +542,23 @@ li {
   position: relative;
 }
 
-.category-head {
-  color: black;
-  background-color: #eceaea;
-  border-radius: 10px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10px;
-}
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-.category-head:hover {
-  cursor: pointer;
-  transition: 0.3s ease;
-  background-color: #c4c6ff;
-}
+  .submit-category {
+    width: 100%;
+    margin-top: 10px;
+  }
 
-.category-icon {
-  font-size: 25px;
-  color: #333;
-  margin-right: 15px;
+  .categories {
+    flex-direction: column;
+  }
+
+  .category {
+    min-width: 100%;
+  }
 }
 </style>

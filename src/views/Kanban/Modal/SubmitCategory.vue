@@ -23,6 +23,7 @@ import {
   postCategory,
 } from '../../../services/api.js';
 
+import { iconList } from '../../../utils/iconList.js';
 import Popup from '../../../components/Popup.vue';
 import BaseForm from '../../../components/BaseForm.vue';
 import LoadingSpinner from '../../../components/LoadingSpinner.vue';
@@ -53,11 +54,7 @@ const categoryFields = [
     label: 'Ícone',
     type: 'select',
     required: true,
-    options: [
-      'fa-solid fa-pencil-alt',
-      'fa-solid fa-check-circle',
-      'fa-solid fa-fire',
-    ],
+    options: iconList,
   },
 ];
 

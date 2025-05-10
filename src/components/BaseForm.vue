@@ -16,15 +16,32 @@
 
         <!-- icon -->
         <div v-else-if="field.name === 'icon'" class="icon-selector">
-          <div class="icon-grid">
-            <button
-              v-for="option in field.options"
-              :key="option"
-              @click.prevent="formData[field.name] = option"
-              :class="{ selected: formData[field.name] === option }"
-            >
-              <i :class="option" class="icons"></i>
-            </button>
+          <button
+            type="button"
+            @click="toggleIconPicker(index)"
+            class="icon-picker-btn"
+          >
+            {{ formData[field.name] ? 'Selected icon' : 'Select icon' }}
+            <i
+              v-if="formData[field.name]"
+              :class="formData[field.name]"
+              class="icons preview-icon"
+            />
+          </button>
+
+          <div v-if="activeIconIndex === index" class="icon-popup">
+            <div class="icon-grid">
+              <button
+                class="select-icon-btn"
+                type="button"
+                v-for="option in field.options"
+                :key="option"
+                @click.prevent="selectIcon(option, field.name)"
+                :class="{ selected: formData[field.name] === option }"
+              >
+                <i :class="option" class="icons" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -80,6 +97,7 @@ const props = defineProps({
 
 const modelFormData = defineModel('formData');
 const internalFormData = ref({});
+const activeIconIndex = ref(null);
 
 const formData = computed({
   get: () => modelFormData.value ?? internalFormData.value,
@@ -130,6 +148,15 @@ function initializeForm() {
 }
 
 initializeForm();
+
+function toggleIconPicker(index) {
+  activeIconIndex.value = activeIconIndex.value === index ? null : index;
+}
+
+function selectIcon(icon, fieldName) {
+  formData.value[fieldName] = icon;
+  activeIconIndex.value = null;
+}
 
 function handleSubmit() {
   if (props.submitHandler) {
@@ -192,33 +219,48 @@ function handleSubmit() {
 }
 
 .icon-selector {
-  display: flex;
-  flex-direction: column;
+  position: relative;
 }
 
-.icon-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-  margin-top: 10px;
-}
-
-.icon-grid button {
-  border: none;
-  background: none;
+.icon-picker-btn {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 2px solid #ccc;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 20px;
-  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
-.icon-grid button.selected {
-  border: 2px solid #646cff;
-  border-radius: 5px;
+.preview-icon {
+  font-size: 1.2rem;
+  color: black;
+}
+
+.icon-popup {
+  position: absolute;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 250px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.select-icon-btn {
+  background-color: white;
+  border: 2px solid #ccc;
 }
 
 .icons {
-  font-size: 32px;
-  color: #333;
+  font-size: 1.2rem;
+  color: black !important;
 }
 
 select {
